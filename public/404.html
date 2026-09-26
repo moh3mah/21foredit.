@@ -3,21 +3,31 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>21foredit - منصة ستايلات وشروحات وشيكات الـ Edit</title>
+    <title>21foredit - جاري التحميل...</title>
     <script>
-      // Single Page Apps for GitHub Pages
-      // Redirects 404 queries back to root with original path preserved
-      var pathSegmentsToKeep = 1;
-      var l = window.location;
-      l.replace(
-        l.protocol + '//' + l.hostname + (l.port ? ':' + l.port : '') +
-        l.pathname.split('/').slice(0, 1 + pathSegmentsToKeep).join('/') + '/?/' +
-        l.pathname.slice(1).split('/').slice(pathSegmentsToKeep).join('/').replace(/&/g, '~and~') +
-        (l.search ? '&' + l.search.slice(1).replace(/&/g, '~and~') : '') +
-        l.hash
-      );
+      // Single Page Application redirect for GitHub Pages
+      (function() {
+        var path = window.location.pathname;
+        var hostname = window.location.hostname;
+        var repoPrefix = '';
+
+        if (hostname.endsWith('github.io')) {
+          var parts = path.split('/').filter(Boolean);
+          if (parts.length > 0) {
+            repoPrefix = '/' + parts[0];
+          }
+        }
+
+        // Redirect safely back to the app entry point
+        window.location.replace(
+          (repoPrefix || '') + '/' + window.location.search + window.location.hash
+        );
+      })();
     </script>
   </head>
-  <body>
+  <body style="background-color: #050505; color: #fff; font-family: sans-serif; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0;">
+    <div style="text-align: center;">
+      <p style="font-size: 14px; color: #a1a1aa;">جاري التحميل إلى 21foredit...</p>
+    </div>
   </body>
 </html>

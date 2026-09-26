@@ -50,13 +50,21 @@ import {
   ROLE_CONFIG 
 } from './services/authService';
 
+import { 
+  safeGetStorage, 
+  safeGetString, 
+  safeSetStorage, 
+  safeSetString, 
+  safeRemoveStorage 
+} from './utils/storage';
+
 export default function App() {
   // Navigation State
   const [activeTab, setActiveTab] = useState<string>('home');
 
   // Main Banner State (Editable by Owner from phone)
   const [bannerImage, setBannerImage] = useState<string>(() => {
-    return localStorage.getItem('21foredit_banner') || MAIN_BANNER_IMAGE;
+    return safeGetString('21foredit_banner', MAIN_BANNER_IMAGE);
   });
 
   // Authentication State (Email, Password, Name & @Username)
@@ -68,12 +76,7 @@ export default function App() {
     role?: string;
     bio?: string;
   } | null>(() => {
-    const saved = localStorage.getItem('21foredit_user');
-    if (saved) {
-      try { return JSON.parse(saved); } catch (e) { return null; }
-    }
-    // Default logged in as Owner for immediate full testing and power!
-    return {
+    const defaultOwner = {
       email: OWNER_EMAIL,
       username: 'shanks95816',
       name: 'أحمد (Shanks)',
@@ -81,53 +84,45 @@ export default function App() {
       role: 'owner',
       bio: 'مؤسس ومالك منصة 21foredit 👑 | محترف مونتاج الأفتر إيفكتس ولايت موشن',
     };
+    return safeGetStorage('21foredit_user', defaultOwner);
   });
 
   // Admins List State
   const [adminsList, setAdminsList] = useState<AdminUser[]>(() => {
-    const saved = localStorage.getItem('21foredit_admins');
-    if (saved) {
-      try { return JSON.parse(saved); } catch (e) { return []; }
-    }
-    return [
+    const defaultAdmins = [
       {
         email: 'talon@21foredit.vip',
         username: 'talon',
-        role: 'admin',
+        role: 'admin' as const,
         addedAt: '2026-09-20'
       }
     ];
+    return safeGetStorage('21foredit_admins', defaultAdmins);
   });
 
   // Content States with LocalStorage Persistence
   const [styles, setStyles] = useState<EditStyle[]>(() => {
-    const saved = localStorage.getItem('21foredit_styles');
-    return saved ? JSON.parse(saved) : INITIAL_STYLES;
+    return safeGetStorage('21foredit_styles', INITIAL_STYLES);
   });
 
   const [skills, setSkills] = useState<EditSkill[]>(() => {
-    const saved = localStorage.getItem('21foredit_skills');
-    return saved ? JSON.parse(saved) : INITIAL_SKILLS;
+    return safeGetStorage('21foredit_skills', INITIAL_SKILLS);
   });
 
   const [categories, setCategories] = useState<EditCategory[]>(() => {
-    const saved = localStorage.getItem('21foredit_categories');
-    return saved ? JSON.parse(saved) : INITIAL_CATEGORIES;
+    return safeGetStorage('21foredit_categories', INITIAL_CATEGORIES);
   });
 
   const [tutorials, setTutorials] = useState<TutorialItem[]>(() => {
-    const saved = localStorage.getItem('21foredit_tutorials');
-    return saved ? JSON.parse(saved) : INITIAL_TUTORIALS;
+    return safeGetStorage('21foredit_tutorials', INITIAL_TUTORIALS);
   });
 
   const [allPresets, setAllPresets] = useState<PresetItem[]>(() => {
-    const saved = localStorage.getItem('21foredit_presets');
-    return saved ? JSON.parse(saved) : [...INITIAL_SHAKES, ...INITIAL_EFFECTS_COURSES, ...INITIAL_CC_FIVEM];
+    return safeGetStorage('21foredit_presets', [...INITIAL_SHAKES, ...INITIAL_EFFECTS_COURSES, ...INITIAL_CC_FIVEM]);
   });
 
   const [userVideos, setUserVideos] = useState<UserVideo[]>(() => {
-    const saved = localStorage.getItem('21foredit_videos');
-    return saved ? JSON.parse(saved) : INITIAL_USER_VIDEOS;
+    return safeGetStorage('21foredit_videos', INITIAL_USER_VIDEOS);
   });
 
   // Modals
@@ -153,105 +148,79 @@ export default function App() {
 
   // Banned Users State
   const [bannedEmails, setBannedEmails] = useState<string[]>(() => {
-    const saved = localStorage.getItem('21foredit_banned');
-    return saved ? JSON.parse(saved) : [];
+    return safeGetStorage('21foredit_banned', []);
   });
 
   // Followings State
   const [followings, setFollowings] = useState<{ [email: string]: boolean }>(() => {
-    const saved = localStorage.getItem('21foredit_followings');
-    return saved ? JSON.parse(saved) : {};
+    return safeGetStorage('21foredit_followings', {});
   });
 
   // Notifications State
   const [notifications, setNotifications] = useState<AppNotification[]>(() => {
-    const saved = localStorage.getItem('21foredit_notifications');
-    return saved ? JSON.parse(saved) : INITIAL_NOTIFICATIONS;
+    return safeGetStorage('21foredit_notifications', INITIAL_NOTIFICATIONS);
   });
 
   const [, setForceUpdate] = useState(0);
 
-  // Save to LocalStorage
+  // Save to LocalStorage safely
   useEffect(() => {
-    if (currentUser) localStorage.setItem('21foredit_user', JSON.stringify(currentUser));
-    else localStorage.removeItem('21foredit_user');
+    if (currentUser) safeSetStorage('21foredit_user', currentUser);
+    else safeRemoveStorage('21foredit_user');
   }, [currentUser]);
 
   useEffect(() => {
-    localStorage.setItem('21foredit_admins', JSON.stringify(adminsList));
+    safeSetStorage('21foredit_admins', adminsList);
   }, [adminsList]);
 
   useEffect(() => {
-    localStorage.setItem('21foredit_styles', JSON.stringify(styles));
+    safeSetStorage('21foredit_styles', styles);
   }, [styles]);
 
   useEffect(() => {
-    localStorage.setItem('21foredit_skills', JSON.stringify(skills));
+    safeSetStorage('21foredit_skills', skills);
   }, [skills]);
 
   useEffect(() => {
-    localStorage.setItem('21foredit_categories', JSON.stringify(categories));
+    safeSetStorage('21foredit_categories', categories);
   }, [categories]);
 
   useEffect(() => {
-    localStorage.setItem('21foredit_tutorials', JSON.stringify(tutorials));
+    safeSetStorage('21foredit_tutorials', tutorials);
   }, [tutorials]);
 
   useEffect(() => {
-    try {
-      localStorage.setItem('21foredit_presets', JSON.stringify(allPresets));
-    } catch (e) {
-      console.warn('Could not save presets to localStorage:', e);
-    }
+    safeSetStorage('21foredit_presets', allPresets);
   }, [allPresets]);
 
   useEffect(() => {
     try {
-      // Safe serialization for videos - NEVER put massive base64 in localStorage
       const safeVideos = userVideos.map(v => {
         if (v.videoUrl && (v.videoUrl.startsWith('data:') || v.videoUrl.startsWith('blob:')) && v.videoUrl.length > 50000) {
           return { ...v, videoUrl: '[offline_stored]' };
         }
         return v;
       });
-      localStorage.setItem('21foredit_videos', JSON.stringify(safeVideos));
+      safeSetStorage('21foredit_videos', safeVideos);
     } catch (e) {
-      console.warn('Could not save videos to localStorage, applying quota-safe fallback:', e);
-      try {
-        const minimalVideos = userVideos.map(v => 
-          v.videoUrl && v.videoUrl.startsWith('http')
-            ? v
-            : { ...v, videoUrl: '[offline_stored]' }
-        );
-        localStorage.setItem('21foredit_videos', JSON.stringify(minimalVideos));
-      } catch (err2) {
-        console.warn('LocalStorage quota critical:', err2);
-      }
+      console.warn('Could not save videos to localStorage:', e);
     }
   }, [userVideos]);
 
   useEffect(() => {
-    try {
-      localStorage.setItem('21foredit_banner', bannerImage);
-    } catch (e) {}
+    safeSetString('21foredit_banner', bannerImage);
   }, [bannerImage]);
 
   useEffect(() => {
-    try {
-      localStorage.setItem('21foredit_banned', JSON.stringify(bannedEmails));
-    } catch (e) {}
+    safeSetStorage('21foredit_banned', bannedEmails);
   }, [bannedEmails]);
 
   useEffect(() => {
-    try {
-      localStorage.setItem('21foredit_followings', JSON.stringify(followings));
-    } catch (e) {}
+    safeSetStorage('21foredit_followings', followings);
   }, [followings]);
 
   useEffect(() => {
-    try {
-      localStorage.setItem('21foredit_notifications', JSON.stringify(notifications));
-    } catch (e) {}
+    safeSetStorage('21foredit_notifications', notifications);
   }, [notifications]);
 
   // Permissions Check

@@ -4,8 +4,21 @@ import path from 'path';
 import {defineConfig} from 'vite';
 
 export default defineConfig(() => {
+  // Determine base path for GitHub Pages and different environments:
+  // 1. Explicit BASE_URL (e.g. from GitHub Actions steps.pages.outputs.base_path)
+  // 2. GITHUB_REPOSITORY (e.g. 'ahmdzwahrt273/21foredit' -> '/21foredit/')
+  // 3. Fallback to relative './' for local builds, preview, or custom domains
+  let basePath = process.env.BASE_URL;
+
+  if (!basePath && process.env.GITHUB_REPOSITORY) {
+    const repo = process.env.GITHUB_REPOSITORY.split('/')[1];
+    if (repo) {
+      basePath = repo.endsWith('.github.io') ? '/' : `/${repo}/`;
+    }
+  }
+
   return {
-    base: './',
+    base: basePath || './',
     plugins: [react(), tailwindcss()],
     resolve: {
       alias: {
