@@ -1,0 +1,6 @@
+{
+  "name": "21foredit",
+  "description": "21foredit - المنصة الاحترافية لمجتمع الإيديتورز: ستايلات الادت، سكيلز، شروحات، شيكات XML، وافكتات وتصحيح ألوان CC",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
